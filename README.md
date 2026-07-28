@@ -32,10 +32,10 @@ CORS & Dotenv
 🚀 Instalación y Configuración Local
 Este proyecto utiliza pnpm como gestor de paquetes para garantizar descargas más rápidas, un uso eficiente del disco y mayor seguridad en el manejo de dependencias.
 
-1. Clonar el repositorio
-git clone [https://github.com/TU_USUARIO/devjobs.git](https://github.com/TU_USUARIO/devjobs.gi)
+Clonar el repositorio
+git clone https://github.com/TU_USUARIO/devjobs.git
 cd devjobs
-2. Configurar el Backend
+Configurar el Backend
 Bash
 cd backend
 pnpm install
