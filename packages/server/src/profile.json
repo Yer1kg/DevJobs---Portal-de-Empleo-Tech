@@ -1,0 +1,24 @@
+{
+  "name": "pepe",
+  "email": "corre@corre.com",
+  "favorites": [
+    {
+      "id": 2,
+      "title": "Backend Node.js",
+      "company": "Tech Solutions Inc.",
+      "location": "Remoto",
+      "description": "Experiencia con bases de datos y APIs REST...",
+      "company_logo": "https://via.placeholder.com/100"
+    },
+    {
+      "id": 1,
+      "title": "Frontend Developer (React)",
+      "company": "Tech Solutions Inc.",
+      "location": "Remoto",
+      "description": "Buscamos experto en CSS y JS para clonar DevJobs...",
+      "company_logo": "https://via.placeholder.com/100"
+    }
+  ],
+  "about": "si",
+  "location": "pepe"
+}

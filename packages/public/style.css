@@ -1,0 +1,315 @@
+/* =========================================
+   1. VARIABLES Y CONFIGURACIÓN GLOBAL
+   ========================================= */
+
+.App {
+    display: block;
+    width: 100%;
+    min-height: 100vh;
+}
+
+:root {
+    --bg-body: #111729;    /* Fondo azul muy oscuro */
+    --bg-card: #19202D;    /* Fondo de tarjetas/filas */
+    --accent: #5964E0;     /* Azul principal DevJobs */
+    --accent-hover: #939BF4;
+    --text-main: #FFFFFF;
+    --text-dim: #94a3b8;
+    --transition: 0.3s ease;
+}
+
+html, body {
+    background-color: #111729 !important; /* Color sólido inmediato */
+    margin: 0;
+    padding: 0;
+}
+
+#root {
+    background-color: #111729;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body, #root {
+    background-color: var(--bg-body) !important;
+    color: var(--text-main);
+    font-family: 'Open Sans', sans-serif;
+    min-height: 100vh; /* Asegura que siempre ocupe toda la pantalla */
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* =========================================
+   2. NAVEGACIÓN (Header unificado)
+   ========================================= */
+.main-nav {
+    background-color: #121a2b;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-link {
+    text-decoration: none;
+    color: white !important; /* Fuerza el color blanco */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-icon {
+    background-color: var(--accent);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+}
+
+.nav-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.nav-links a:hover {
+    color: white;
+}
+
+.nav-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.nav-link-profile {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    margin-right: 20px;
+}
+
+.nav-link-profile:hover {
+    color: var(--accent); /* Cambia al azul cyan al pasar el ratón */
+}
+
+.btn-perfil {
+    background-color: rgba(30, 41, 59, 0.5); /* Un tono oscuro semitransparente */
+    color: var(--accent); /* El texto en azul cyan */
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.btn-perfil:hover {
+    background-color: rgba(30, 41, 59, 0.8);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+}
+
+/* =========================================
+   3. BUSCADOR (Search Bar)
+   ========================================= */
+.search-container {
+    background-color: var(--bg-card);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    width: 100%;
+    /* Quitamos el margen negativo fijo si causa problemas y usamos uno relativo */
+    transform: translateY(-50%); 
+    position: relative;
+    z-index: 10;
+}
+
+.search-group {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 15px;
+    width: 100%;
+    outline: none;
+}
+
+.border-left {
+    border-left: 1px solid rgba(157, 174, 194, 0.2);
+}
+
+.search-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-left: 20px;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* =========================================
+   4. HOME (Página Principal)
+   ========================================= */
+.hero {
+    background: linear-gradient(rgba(17, 23, 41, 0.7), rgba(17, 23, 41, 0.8)), 
+                url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1352&q=80');
+    background-size: cover;
+    background-position: center;
+    padding: 120px 20px; /* Más espacio para el texto */
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+}
+
+.explanation-section {
+    text-align: center;
+    padding: 80px 0;
+}
+
+.explanation-section h2 {
+    font-size: 2.2rem;
+    margin-bottom: 15px;
+}
+
+.grid-proyectos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 50px 30px;
+    padding: 40px 0 80px;
+}
+
+.card-home {
+    background-color: var(--bg-card);
+    padding: 32px;
+    border-radius: 12px;
+    position: relative;
+    margin-top: 25px;
+    transition: var(--transition);
+}
+
+.job-icon-container {
+    position: absolute;
+    top: -25px;
+    left: 32px;
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--accent);
+    font-size: 1.5rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* =========================================
+   5. RESULTADOS Y COMPONENTES
+   ========================================= */
+.resultados-lista {
+    margin-top: 80px !important; /* Esto empuja las tarjetas hacia abajo para que el buscador no las tape */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.job-card {
+    background-color: var(--bg-card) !important;
+    padding: 32px;
+    border-radius: 12px;
+    width: 100%;
+}
+.resultado-item {
+    background-color: var(--bg-card);
+    padding: 28px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-aplicar-azul, .btn-login {
+    background-color: var(--accent) !important;
+    color: white !important;
+    padding: 12px 28px;
+    border-radius: 5px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: rgba(89, 100, 224, 0.1);
+    color: var(--accent);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .search-container { flex-direction: column; margin-top: -20px; }
+    .border-left { border-left: none; border-top: 1px solid rgba(157, 174, 194, 0.2); width: 100%; }
+    .nav-links { display: none; } /* Ocultar menú en móvil para evitar desorden */
+}
+
+.card-home ul {
+    margin-top: 15px;
+}
+
+.card-home li {
+    margin-bottom: 10px;
+    color: var(--text-dim);
+}
+
+
