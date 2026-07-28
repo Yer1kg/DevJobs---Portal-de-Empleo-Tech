@@ -2,7 +2,7 @@
 
 **Devjobs** es una plataforma web full-stack diseñada para conectar a desarrolladores con empresas del sector tecnológico. Permite la búsqueda de empleo, gestión de vacantes y perfiles profesionales dinámicos según el rol del usuario.
 
-![Devjobs Preview](https://via.placeholder.com/800x400?text=Devjobs+Platform+Preview)
+ (Pendiente)
 
 ---
 
