@@ -1,4 +1,4 @@
-# 🚀 Devjobs - Portal de Empleo Tech
+# 💻 Devjobs - Portal de Empleo Tech
 
 **Devjobs** es una plataforma web full-stack diseñada para conectar a desarrolladores con empresas del sector tecnológico. Permite la búsqueda de empleo, gestión de vacantes y perfiles profesionales dinámicos según el rol del usuario.
 
