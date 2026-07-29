@@ -4,6 +4,14 @@
 
 [![Live Demo](https://img.shields.io/badge/🌐-Ver_Demo-blue?style=for-the-badge&logo=render)](https://devjobs-web-6uil.onrender.com)
 ---
+## 🌐 Despliegue en Línea
+
+El proyecto se encuentra totalmente desplegado y operativo en Render:
+
+* **Frontend:** [https://devjobs-web-6uil.onrender.com](https://devjobs-web-6uil.onrender.com)
+* **Backend (API):** [https://devjobs-api-iu23.onrender.com](https://devjobs-api-iu23.onrender.com)
+
+> ⚠️ **Nota sobre la demo:** Al utilizar el plan gratuito de Render, el servidor backend entra en modo
 
 ## ✨ Características Principales
 
