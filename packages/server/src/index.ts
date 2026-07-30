@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import * as dotenv from 'dotenv';
 import { z } from 'zod';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { aiRouter } from './routes/ai.routes.js';
 import db from './db/database.js';
@@ -43,7 +43,7 @@ app.post('/api/auth/register', async (req, res) => {
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcryptjs.hash(password, 10);
     const rolFinal = (role === 'empresa' || role === 'trabajador') ? role : 'trabajador';
 
     const query = `INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`;
