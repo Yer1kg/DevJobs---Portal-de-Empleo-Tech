@@ -1,5 +1,5 @@
 // packages/server/src/seed.ts
-import { db } from './db.js'; // Ajusta la importación según tu cliente de BD (SQLite)
+import { db } from '../db.js'; // Ajusta la importación según tu cliente de BD (SQLite)
 
 const sampleJobs = [
   {
