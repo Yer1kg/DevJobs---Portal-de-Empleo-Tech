@@ -23,7 +23,7 @@ const jobSchema = z.object({
   description: z.string()
     .min(30, "La descripción es demasiado corta")
     .refine((val) => !val.includes("Lo siento") && !val.includes("no parece ser"), {
-      message: "La descripción contains un mensaje de error de la IA y no puede ser publicada."
+      message: "La descripción contiene un mensaje de error de la IA y no puede ser publicada."
     })
     .refine((val) => !val.includes("¡Claro!") && !val.includes("¿Quieres jugar?"), {
       message: "El contenido no es profesional."
@@ -81,7 +81,8 @@ app.post('/api/auth/login', async (req, res) => {
       if (err) return res.status(500).json({ error: err.message });
       if (!user) return res.status(401).json({ error: "El email o la contraseña no son correctos." });
 
-      const validPassword = await bcrypt.compare(password, user.password);
+      // ✅ AHORA USA BCRYPTJS (se corrigió de bcrypt a bcryptjs):
+      const validPassword = await bcryptjs.compare(password, user.password);
       if (!validPassword) return res.status(401).json({ error: "El email o la contraseña no son correctos." });
 
       const secretKey = process.env.JWT_SECRET || 'tu_clave_secreta_de_desarrollo';
@@ -112,7 +113,7 @@ app.get('/api/profile', authenticateToken, (req: any, res: any) => {
 
   if (!userId) {
     console.error("🚨 Error crítico: El middleware no inyectó un ID válido en req.user");
-    return res.status(400).json({ error: "El token de sesión no contains un ID de usuario válido." });
+    return res.status(400).json({ error: "El token de sesión no contiene un ID de usuario válido." });
   }
 
   db.get('SELECT id, username, email, role FROM users WHERE id = ?', [userId], (err, user: any) => {
@@ -169,13 +170,12 @@ app.put('/api/profile/update', authenticateToken, (req: any, res: any) => {
   });
 });
 
-// --- RUTAS DE TRABAJOS (JOBS) CON COALESCE Y BUSCADOR INTELIGENTE INTEGRADOS ---
+// --- RUTAS DE TRABAJOS (JOBS) ---
 
 app.get('/api/jobs', (req, res) => {
   const page = req.query.page ? parseInt(req.query.page as string) : null;
   const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
   
-  // Usamos una variable común de búsqueda para interceptar título, texto estático de empresa o el username actualizado
   const search = req.query.title ? `%${req.query.title}%` : '%';
   const searchLocation = req.query.location ? `%${req.query.location}%` : '%';
 
@@ -326,7 +326,6 @@ app.post('/api/users/change-role', authenticateToken, (req: any, res: any) => {
       const ahora = new Date();
       const miNuevoRol = user.role === 'empresa' ? 'trabajador' : 'empresa';
 
-      // SI CAMBIA DE 'EMPRESA' A 'TRABAJADOR', ELIMINAMOS SUS VACANTES PUBLICADAS
       if (user.role === 'empresa' && miNuevoRol === 'trabajador') {
         db.run(`DELETE FROM jobs WHERE user_id = ?`, [userId], function (deleteErr) {
           if (deleteErr) {
@@ -366,7 +365,6 @@ app.post('/api/users/change-role', authenticateToken, (req: any, res: any) => {
         });
 
       } else {
-        // SI CAMBIA DE 'TRABAJADOR' A 'EMPRESA'
         db.run(
           `UPDATE users SET role = ?, last_role_change = ? WHERE id = ?`,
           [miNuevoRol, ahora.toISOString(), userId],
