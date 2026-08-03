@@ -29,13 +29,15 @@ export function Register() {
         body: JSON.stringify({ username, email, password, role }),
       });
 
-      const data = await response.json();
+      // Leemos primero como texto plano para prevenir errores si el backend responde con un cuerpo vacío
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : {};
 
       if (!response.ok) {
-        throw new Error(data.error || 'Error al crear la cuenta');
+        throw new Error(data.error || data.message || 'Error al crear la cuenta');
       }
 
-      alert("¡Cuenta creada con éxito de forma real!");
+      alert("¡Cuenta creada con éxito!");
       navigate('/login');
     } catch (err) {
       setError(err.message);
