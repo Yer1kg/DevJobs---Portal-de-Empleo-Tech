@@ -1,7 +1,10 @@
-import { defineConfig } from 'vitest/config'
+// vite.config.js
+import { defineConfig } from 'vite';
+import react from '@vitejs.plugin-react';
 
 export default defineConfig({
-  test: {
-    globals: true, // Esto permite usar describe, it y expect sin imports
-  },
-})
+  plugins: [react()],
+  build: {
+    target: 'esnext' // o 'es2022'
+  }
+});
