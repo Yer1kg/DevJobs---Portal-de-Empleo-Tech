@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+// 🚀 Toma la variable de entorno de Vite o usa por defecto la API de Render
+const API_URL = import.meta.env.VITE_API_URL || 'https://devjobs-api-iu23.onrender.com';
+
 export function Register() {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
@@ -14,16 +17,16 @@ export function Register() {
     const username = formData.get('username');
     const email = formData.get('email');
     const password = formData.get('password');
-    const role = formData.get('role'); // 🔍 Ahora sí captura el rol gracias al name="role"
+    const role = formData.get('role');
 
     try {
-      // Hacemos la petición POST real a tu servidor de Node
-      const response = await fetch('http://localhost:3000/api/auth/register', {
+      // 🚀 Usamos la variable API_URL dinámica en lugar de localhost:3000
+      const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, email, password, role }), // 🚀 Enviamos el rol al backend
+        body: JSON.stringify({ username, email, password, role }),
       });
 
       const data = await response.json();
@@ -69,7 +72,6 @@ export function Register() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <label style={{ fontWeight: 'bold' }}>Soy un...</label>
-            {/* 🛠️ Añadido name="role" y cambiados los values para hacer match con el backend */}
             <select name="role" className="search-input" style={{ backgroundColor: 'var(--bg-body)', borderRadius: '5px', border: '1px solid #334155', color: 'white' }}>
               <option value="trabajador">Desarrollador buscando empleo</option>
               <option value="empresa">Empresa buscando talento</option>
