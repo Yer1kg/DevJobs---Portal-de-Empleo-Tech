@@ -1,7 +1,9 @@
-// src/pages/Home.jsx
 import { useState, useEffect } from 'react'
 import { SearchBar } from '../components/SearchBar'
 import { JobCard } from '../components/JobCard'
+
+// 🚀 Toma la variable de entorno de Vite o usa por defecto la API de Render
+const API_URL = import.meta.env.VITE_API_URL || 'https://devjobs-api-iu23.onrender.com';
 
 export function Home() {
   // Estado para los resultados de la barra de búsqueda
@@ -13,7 +15,7 @@ export function Home() {
 
   // Carga los empleos destacados aleatorios desde el backend al montar el componente
   useEffect(() => {
-    fetch('http://localhost:3000/api/jobs/featured')
+    fetch(`${API_URL}/api/jobs/featured`)
       .then(res => res.json())
       .then(data => setFeaturedJobs(data))
       .catch(err => console.error("Error cargando destacados:", err))
