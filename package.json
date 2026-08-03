@@ -36,6 +36,9 @@
       "sqlite3",
       "esbuild",
       "globals"
-    ]
+    ],
+    "overrides": {
+      "esbuild": "^0.28.0"
+    }
   }
 }
