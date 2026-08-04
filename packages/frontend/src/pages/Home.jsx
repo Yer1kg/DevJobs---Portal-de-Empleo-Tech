@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { SearchBar } from '../components/SearchBar'
 import { JobCard } from '../components/JobCard'
-import { API_URL } from '../config/api';
+import { API_URL } from '../api';
 
 
 
