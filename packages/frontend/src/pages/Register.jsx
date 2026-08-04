@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API_URL } from '../config/api';
 
-// 🚀 Toma la variable de entorno de Vite o usa por defecto la API de Render
-const API_URL = import.meta.env.VITE_API_URL || 'https://devjobs-api-iu23.onrender.com';
+
+
 
 export function Register() {
   const navigate = useNavigate();
