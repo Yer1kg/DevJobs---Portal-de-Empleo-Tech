@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API_URL } from '../api';
-
-
+import { useAuth } from '../context/AuthContext';
 
 
 export function Register() {
