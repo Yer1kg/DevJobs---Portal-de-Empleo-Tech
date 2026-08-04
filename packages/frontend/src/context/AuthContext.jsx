@@ -1,6 +1,5 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 
-//*const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const API_URL = import.meta.env.VITE_API_URL || 'https://devjobs-api-iu23.onrender.com';
 const AuthContext = createContext();
 
@@ -21,7 +20,8 @@ export function AuthProvider({ children }) {
     const savedToken = localStorage.getItem('token');
     
     if (savedToken) {
-      fetch('http://localhost:3000/api/profile', {
+      // ✅ Reemplazado localhost por API_URL
+      fetch(`${API_URL}/api/profile`, {
         headers: { 'Authorization': `Bearer ${savedToken}` }
       })
         .then(res => {
@@ -72,8 +72,8 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      // Petición al endpoint real de cambio de rol
-      const res = await fetch('http://localhost:3000/api/users/change-role', {
+      // ✅ Reemplazado localhost por API_URL
+      const res = await fetch(`${API_URL}/api/users/change-role`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -139,7 +139,8 @@ export function AuthProvider({ children }) {
       // Consultamos el perfil para tomar el ROL REAL recién traído de la Base de Datos
       let dbData = {};
       try {
-        const response = await fetch('http://localhost:3000/api/profile', {
+        // ✅ Reemplazado localhost por API_URL
+        const response = await fetch(`${API_URL}/api/profile`, {
           headers: { 'Authorization': `Bearer ${userToken}` }
         });
         if (response.ok) {
