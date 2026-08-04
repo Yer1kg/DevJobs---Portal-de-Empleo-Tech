@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { API_URL } from '../api';
+import { useAuth } from '../context/AuthContext'; 
+import { API_URL } from '../api'; // ✅ Importamos la URL dinámica
 
 export default function Empresas() {
   const [jobTitle, setJobTitle] = useState('');
@@ -40,7 +40,8 @@ export default function Empresas() {
 
   const fetchJobDetails = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/jobs`);
+      // ✅ Reemplazado localhost por API_URL
+      const response = await fetch(`${API_URL}/api/jobs`);
       const jobs = await response.json();
       
       const job = jobs.find(j => j.id === parseInt(id));
@@ -84,9 +85,10 @@ export default function Empresas() {
     sendLock.current = true;
     setIsSubmitting(true);
 
+    // ✅ Reemplazado localhost por API_URL en ambas URLs
     const endpoint = isEditing 
-      ? `http://localhost:3000/api/jobs/update/${jobId}` 
-      : 'http://localhost:3000/api/jobs/create';
+      ? `${API_URL}/api/jobs/update/${jobId}` 
+      : `${API_URL}/api/jobs/create`;
 
     try {
       const response = await fetch(endpoint, {
@@ -136,7 +138,8 @@ export default function Empresas() {
     setDescription(''); 
 
     try {
-      const response = await fetch('http://localhost:3000/api/ai/generate-description', {
+      // ✅ Reemplazado localhost por API_URL
+      const response = await fetch(`${API_URL}/api/ai/generate-description`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -164,6 +167,7 @@ export default function Empresas() {
         setDescription((prev) => prev + chunk);
       }
     } catch (error) {
+      console.error("Error de la IA:", error);
       setDescription("❌ Hubo un error al generar la descripción.");
     } finally {
       setLoading(false);
