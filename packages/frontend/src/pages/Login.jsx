@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { API_URL } from '../api';
 import { useAuth } from '../context/AuthContext';
 
-
 export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,7 +14,7 @@ export function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Estados para el Modal de recuperar contraseña (Opción 1: Simulación visual limpia)
+  // Estados para el Modal de recuperar contraseña
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [recoveryEmail, setRecoveryEmail] = useState('');
   const [recoveryStatus, setRecoveryStatus] = useState({ loading: false, success: false, message: '' });
@@ -29,14 +28,13 @@ export function Login() {
     }
   }, []);
 
-  // 2. SUBMIT CON TU USEAUTH
+  // 2. SUBMIT CON MANEJO SEGURO DE ERRORES HTTP Y JSON
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
-      // 🚀 Se reemplazó http://localhost:3000 por la constante dinámica API_URL
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
@@ -45,11 +43,21 @@ export function Login() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
-
+      // 🛑 Validar respuesta del servidor antes de procesar JSON
       if (!response.ok) {
-        throw new Error(data.error || 'Error al iniciar sesión');
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Error ${response.status}: Error al iniciar sesión`);
+        } else {
+          const textError = await response.text();
+          console.error('Servidor respondió con un error no JSON:', response.status, textError);
+          throw new Error(`Ruta de API no encontrada o error en servidor (${response.status})`);
+        }
       }
+
+      // ✅ Solo convertimos a JSON si la respuesta fue válida (status 200-299)
+      const data = await response.json();
 
       // LÓGICA DE RECORDARME
       if (rememberMe) {
@@ -58,10 +66,10 @@ export function Login() {
         localStorage.removeItem('rememberedEmail');
       }
 
-      // 🔑 CONEXIÓN CON TU CONTEXTO REAL: Guarda el usuario y el token en tu AuthContext
+      // 🔑 Guardar el usuario y el token en tu AuthContext
       login({ id: data.user.id, name: data.user.username, email: data.user.email }, data.token); 
 
-      // Redirigimos al inicio con la sesión activa
+      // Redirigir al inicio
       navigate('/');
     } catch (err) {
       setError(err.message);
