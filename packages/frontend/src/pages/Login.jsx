@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../api';
 
 
 export function Login() {
