@@ -2,6 +2,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
+// 🚀 Toma la variable de entorno de Vite o usa por defecto la API de Render
+const API_URL = import.meta.env.VITE_API_URL || 'https://devjobs-api-iu23.onrender.com';
+
 export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,7 +37,8 @@ export function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      // 🚀 Se reemplazó http://localhost:3000 por la constante dinámica API_URL
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
