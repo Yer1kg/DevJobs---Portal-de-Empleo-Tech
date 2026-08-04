@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; 
+import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../api';
 
 export default function Empresas() {
   const [jobTitle, setJobTitle] = useState('');
