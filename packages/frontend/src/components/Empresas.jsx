@@ -2,24 +2,25 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; 
 
+// 🌐 URL dinámicas de la API (Render en producción, VITE env como respaldo)
+const API_URL = import.meta.env.VITE_API_URL || 'https://devjobs-api-iu23.onrender.com';
+
 export default function Empresas() {
   const [jobTitle, setJobTitle] = useState('');
-  const [location, setLocation] = useState('Remoto'); // 📍 Modalidad/Ubicación por defecto
-  const [contractType, setContractType] = useState('Jornada Completa'); // 💼 Tipo por defecto
+  const [location, setLocation] = useState('Remoto');
+  const [contractType, setContractType] = useState('Jornada Completa');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false); 
   const [jobId, setJobId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // 🔑 Extraemos el usuario y token
   const { user, token } = useAuth();
-  
   const navigate = useNavigate();
   const consoleEndRef = useRef(null);
   const sendLock = useRef(false);
 
-  // 🔒 FILTRO DE SEGURIDAD EXCLUSIVO: Expulsar si es un trabajador
+  // 🔒 FILTRO DE SEGURIDAD EXCLUSIVO
   useEffect(() => {
     if (!user || user.role !== 'empresa') {
       alert("⚠️ Acceso denegado: Esta sección está reservada exclusivamente para cuentas de Empresa.");
@@ -39,8 +40,10 @@ export default function Empresas() {
 
   const fetchJobDetails = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/jobs`);
-      const jobs = await response.json();
+      // 🛠️ Cambiado a API_URL
+      const response = await fetch(`${API_URL}/api/jobs`);
+      const data = await response.json();
+      const jobs = data && data.data && Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
       
       const job = jobs.find(j => j.id === parseInt(id));
       if (job) {
@@ -48,7 +51,6 @@ export default function Empresas() {
         setDescription(job.description || '');
         if (job.location) setLocation(job.location);
         
-        // 🛠️ Soporte para múltiples nombres de propiedad al editar
         const typeValue = job.type || job.contract || job.jobType || job.jornada;
         if (typeValue) setContractType(typeValue);
       }
@@ -86,9 +88,10 @@ export default function Empresas() {
     sendLock.current = true;
     setIsSubmitting(true);
 
+    // 🛠️ Cambiado a API_URL
     const endpoint = isEditing 
-      ? `http://localhost:3000/api/jobs/update/${jobId}` 
-      : 'http://localhost:3000/api/jobs/create';
+      ? `${API_URL}/api/jobs/update/${jobId}` 
+      : `${API_URL}/api/jobs/create`;
 
     try {
       const response = await fetch(endpoint, {
@@ -102,8 +105,8 @@ export default function Empresas() {
           description: description,
           company: user?.username || "Empresa Registrada", 
           location: location,
-          type: contractType, // 💼 Se envía como 'type'
-          contract: contractType, // 💼 Redundancia útil para asegurar compatibilidad con la API
+          type: contractType,
+          contract: contractType,
           salary: "A convenir"
         })
       });
@@ -139,7 +142,8 @@ export default function Empresas() {
     setDescription(''); 
 
     try {
-      const response = await fetch('http://localhost:3000/api/ai/generate-description', {
+      // 🛠️ Cambiado a API_URL para solucionar net::ERR_CONNECTION_REFUSED
+      const response = await fetch(`${API_URL}/api/ai/generate-description`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -183,7 +187,6 @@ export default function Empresas() {
         </h2>
       </div>
 
-      {/* INPUT DEL TÍTULO */}
       <div className="ai-input-group">
         <label>Título del puesto</label>
         <input 
@@ -195,7 +198,6 @@ export default function Empresas() {
         />
       </div>
 
-      {/* 🎛️ SECCIÓN DE MODALIDAD Y TIPO DE JORNADA */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
         <div className="ai-input-group" style={{ marginBottom: 0 }}>
           <label>Modalidad de Trabajo</label>
