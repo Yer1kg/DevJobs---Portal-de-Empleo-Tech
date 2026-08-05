@@ -75,15 +75,36 @@ export function Results() {
     );
   }
 
-  // 🔍 FILTRADO DINÁMICO
+  // 🔍 FILTRADO DINÁMICO MEJORADO
   const filteredJobs = allJobs.filter((job) => {
     const titleAndDesc = `${job.title || ''} ${job.description || ''}`.toLowerCase();
     const locationText = (job.location || '').toLowerCase();
-    const typeText = (job.type || job.contract || job.jobType || '').toLowerCase();
+    
+    // Capturamos cualquier propiedad donde se haya guardado la jornada
+    const typeText = (
+      job.type || 
+      job.contract || 
+      job.jobType || 
+      job.jornada || 
+      job.contract_type || 
+      ''
+    ).toLowerCase();
 
     const matchesTech = !techFilter || titleAndDesc.includes(techFilter.toLowerCase());
     const matchesLocation = !locationFilter || locationText.includes(locationFilter.toLowerCase());
-    const matchesContract = !contractFilter || typeText.includes(contractFilter.toLowerCase());
+    
+    // Filtrado flexible para el tipo de jornada
+    const matchesContract = !contractFilter || (() => {
+      const filterLower = contractFilter.toLowerCase();
+      if (filterLower.includes('completa')) {
+        return typeText.includes('completa') || typeText.includes('full');
+      }
+      if (filterLower.includes('parcial') || filterLower.includes('media')) {
+        return typeText.includes('parcial') || typeText.includes('media') || typeText.includes('part');
+      }
+      return typeText.includes(filterLower);
+    })();
+
     const matchesExperience = !experienceFilter || titleAndDesc.includes(experienceFilter.toLowerCase());
 
     return matchesTech && matchesLocation && matchesContract && matchesExperience;
@@ -321,8 +342,7 @@ export function Results() {
           >
             <option value="">Tipo de jornada ▾</option>
             <option value="Jornada Completa">Jornada Completa</option>
-            <option value="Media Jornada">Media Jornada</option>
-            <option value="Remoto">Remoto</option>
+            <option value="Jornada Parcial">Jornada Parcial</option>
             <option value="Freelance">Freelance</option>
             <option value="Indefinido">Indefinido</option>
           </select>
@@ -382,6 +402,12 @@ export function Results() {
                     <span className="company-blue-link">{job.company}</span>
                     <span style={{ color: 'rgba(255,255,255,0.15)' }}>•</span>
                     <span>{job.location}</span>
+                    {(job.type || job.contract) && (
+                      <>
+                        <span style={{ color: 'rgba(255,255,255,0.15)' }}>•</span>
+                        <span style={{ color: '#38edf8' }}>{job.type || job.contract}</span>
+                      </>
+                    )}
                   </div>
 
                   <p className="job-card-desc">{job.description}</p>
