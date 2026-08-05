@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_URL } from '../api'; // Importamos la URL base dinámica
 
 export const useAISummary = () => {
   const [summary, setSummary] = useState('');
@@ -7,7 +8,7 @@ export const useAISummary = () => {
   const getSummary = async (title) => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/api/ai/generate-description', {
+      const response = await fetch(`${API_URL}/api/ai/generate-description`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title })
