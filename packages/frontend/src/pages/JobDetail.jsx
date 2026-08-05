@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useJobs } from '../context/JobsContext';
+import { API_URL } from '../api';
 
 export function JobDetail() {
   const { id } = useParams(); 
@@ -15,7 +16,7 @@ export function JobDetail() {
   useEffect(() => {
     document.body.className = 'bg-dark';
     
-    fetch(`http://localhost:3000/api/jobs/${id}`)
+    fetch(`${API_URL}/api/jobs/${id}`)
       .then(res => {
         if (!res.ok) throw new Error("No se encontró el empleo");
         return res.json();
