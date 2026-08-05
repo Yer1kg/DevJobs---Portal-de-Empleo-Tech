@@ -4,6 +4,9 @@ import { SearchBar } from '../components/SearchBar';
 import { useAuth } from '../context/AuthContext';
 import { useJobs } from '../context/JobsContext';
 
+// Configuración dinámica de la URL base para Render / Entorno de Producción
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 export function Results() {
   const { user, token } = useAuth();
   const { toggleSaveJob, isJobSaved } = useJobs();
@@ -27,7 +30,7 @@ export function Results() {
     if (!window.confirm(`¿Seguro que quieres eliminar la vacante con ID: ${id}?`)) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/jobs/delete/${id}`, {
+      const response = await fetch(`${API_URL}/api/jobs/delete/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -51,7 +54,7 @@ export function Results() {
     const controller = new AbortController();
     setCargandoDatos(true);
 
-    fetch(`http://localhost:3000/api/jobs${search}`, { signal: controller.signal })
+    fetch(`${API_URL}/api/jobs${search}`, { signal: controller.signal })
       .then(res => res.json())
       .then(data => {
         const jobsArray = data && data.data && Array.isArray(data.data) 
