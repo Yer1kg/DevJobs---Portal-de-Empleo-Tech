@@ -1,56 +1,57 @@
-import { useEffect, useState } from 'react'; 
-import { Link, useLocation } from 'react-router-dom';
+import { useEffect, useState, useMemo } from 'react'; 
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { SearchBar } from '../components/SearchBar';
 import { useAuth } from '../context/AuthContext';
 import { useJobs } from '../context/JobsContext';
-
-// Define la URL base dinámica de la API
-const API_URL = import.meta.env.VITE_API_URL || 'https://devjobs-api-iu23.onrender.com';
 
 export function Results() {
   const { user, token } = useAuth();
   const { toggleSaveJob, isJobSaved } = useJobs();
   const { search } = useLocation(); 
+  const navigate = useNavigate();
 
-  const [allJobs, setAllJobs] = useState([]); // Guardará todos los empleos recibidos
+  const [allJobs, setAllJobs] = useState([]);
   const [cargandoDatos, setCargandoDatos] = useState(true);
   
-  // 🎛️ ESTADOS PARA LOS DESPLEGABLES DE FILTRADO
+  // ESTADOS PARA FILTROS
   const [techFilter, setTechFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [contractFilter, setContractFilter] = useState('');
   const [experienceFilter, setExperienceFilter] = useState('');
 
-  // Control de paginación en el Frontend
+  // Paginación
   const [currentPage, setCurrentPage] = useState(1);
-  const jobsPerPage = 6; // Número de ofertas por página
+  const jobsPerPage = 6;
 
   const eliminarEmpleo = async (id) => {
-    if (window.confirm(`¿Seguro que quieres eliminar la vacante con ID: ${id}?`)) {
-      try {
-        const response = await fetch(`${API_URL}/api/jobs/delete/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const data = await response.json();
-        
-        if (response.ok) {
-          alert(data.message || "Vacante eliminada correctamente");
-          setAllJobs(prevJobs => prevJobs.filter(job => job.id !== id));
-        } else {
-          alert(`❌ ${data.message || "No se pudo eliminar la vacante"}`);
+    if (!window.confirm(`¿Seguro que quieres eliminar la vacante con ID: ${id}?`)) return;
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/jobs/delete/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-      } catch (error) {
-        console.error("Error al eliminar:", error);
-        alert("❌ Hubo un error al intentar conectar con el servidor.");
+      });
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert(data.message || "Vacante eliminada correctamente");
+        setAllJobs(prevJobs => prevJobs.filter(job => job.id !== id));
+      } else {
+        alert(`❌ ${data.message || "No se pudo eliminar la vacante"}`);
       }
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      alert("❌ Hubo un error al intentar conectar con el servidor.");
     }
   };
 
   useEffect(() => {
+    const controller = new AbortController();
     setCargandoDatos(true);
-    fetch(`${API_URL}/api/jobs${search}`)
+
+    fetch(`http://localhost:3000/api/jobs${search}`, { signal: controller.signal })
       .then(res => res.json())
       .then(data => {
         const jobsArray = data && data.data && Array.isArray(data.data) 
@@ -62,55 +63,31 @@ export function Results() {
         setCargandoDatos(false);
       })
       .catch(err => {
-        console.error("Error al conectar el servidor:", err);
-        setCargandoDatos(false);
+        if (err.name !== 'AbortError') {
+          console.error("Error al conectar el servidor:", err);
+          setCargandoDatos(false);
+        }
       });
+
+    return () => controller.abort();
   }, [search]);
 
-  if (cargandoDatos) {
-    return (
-      <div className="container" style={{ color: 'white', padding: '100px', textAlign: 'center' }}>
-        <h2>Conectando con el servidor...</h2>
-      </div>
-    );
-  }
+  // FILTRADO OPTIMIZADO CON useMemo
+  const filteredJobs = useMemo(() => {
+    return allJobs.filter((job) => {
+      const titleAndDesc = `${job.title || ''} ${job.description || ''}`.toLowerCase();
+      const locationText = (job.location || '').toLowerCase();
+      const typeText = (job.type || job.contract || '').toLowerCase();
 
-  // 🔍 FILTRADO DINÁMICO MEJORADO
-  const filteredJobs = allJobs.filter((job) => {
-    const titleAndDesc = `${job.title || ''} ${job.description || ''}`.toLowerCase();
-    const locationText = (job.location || '').toLowerCase();
-    
-    // Capturamos cualquier propiedad donde se haya guardado la jornada
-    const typeText = (
-      job.type || 
-      job.contract || 
-      job.jobType || 
-      job.jornada || 
-      job.contract_type || 
-      ''
-    ).toLowerCase();
+      const matchesTech = !techFilter || titleAndDesc.includes(techFilter.toLowerCase());
+      const matchesLocation = !locationFilter || locationText.includes(locationFilter.toLowerCase());
+      const matchesContract = !contractFilter || typeText.includes(contractFilter.toLowerCase());
+      const matchesExperience = !experienceFilter || titleAndDesc.includes(experienceFilter.toLowerCase());
 
-    const matchesTech = !techFilter || titleAndDesc.includes(techFilter.toLowerCase());
-    const matchesLocation = !locationFilter || locationText.includes(locationFilter.toLowerCase());
-    
-    // Filtrado flexible para el tipo de jornada
-    const matchesContract = !contractFilter || (() => {
-      const filterLower = contractFilter.toLowerCase();
-      if (filterLower.includes('completa')) {
-        return typeText.includes('completa') || typeText.includes('full');
-      }
-      if (filterLower.includes('parcial') || filterLower.includes('media')) {
-        return typeText.includes('parcial') || typeText.includes('media') || typeText.includes('part');
-      }
-      return typeText.includes(filterLower);
-    })();
+      return matchesTech && matchesLocation && matchesContract && matchesExperience;
+    });
+  }, [allJobs, techFilter, locationFilter, contractFilter, experienceFilter]);
 
-    const matchesExperience = !experienceFilter || titleAndDesc.includes(experienceFilter.toLowerCase());
-
-    return matchesTech && matchesLocation && matchesContract && matchesExperience;
-  });
-
-  // Resetear página si cambia el filtro
   const handleFilterChange = (setter, value) => {
     setter(value);
     setCurrentPage(1);
@@ -124,13 +101,23 @@ export function Results() {
     setCurrentPage(1);
   };
 
-  // --- CÁLCULO DE PAGINACIÓN LOCAL ---
+  // CÁLCULO DE PAGINACIÓN LOCAL
   const totalResults = filteredJobs.length;
   const totalPages = Math.ceil(totalResults / jobsPerPage);
   
   const indexOfLastJob = currentPage * jobsPerPage;
   const indexOfFirstJob = indexOfLastJob - jobsPerPage;
-  const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
+  const currentJobs = useMemo(() => {
+    return filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
+  }, [filteredJobs, indexOfFirstJob, indexOfLastJob]);
+
+  if (cargandoDatos) {
+    return (
+      <div className="container" style={{ color: 'white', padding: '100px', textAlign: 'center' }}>
+        <h2>Conectando con el servidor...</h2>
+      </div>
+    );
+  }
 
   return (
     <main className="bg-dark" style={{ minHeight: '100vh', paddingBottom: '60px' }}>
@@ -306,7 +293,6 @@ export function Results() {
       <div className="container" style={{ marginTop: '-35px' }}>
         <SearchBar />
         
-        {/* Píldoras de Filtro Rápido con Desplegables Funcionales */}
         <div className="filter-pills-container">
           <select 
             className="pill-button" 
@@ -340,11 +326,11 @@ export function Results() {
             value={contractFilter} 
             onChange={(e) => handleFilterChange(setContractFilter, e.target.value)}
           >
-            <option value="">Tipo de jornada ▾</option>
-            <option value="Jornada Completa">Jornada Completa</option>
-            <option value="Jornada Parcial">Jornada Parcial</option>
-            <option value="Freelance">Freelance</option>
-            <option value="Indefinido">Indefinido</option>
+            <option value="">Tipo de contrato ▾</option>
+            <option value="completa">Jornada Completa</option>
+            <option value="parcial">Jornada Parcial</option>
+            <option value="indefinido">Indefinido</option>
+            <option value="freelance">Freelance</option>
           </select>
 
           <select 
@@ -393,6 +379,7 @@ export function Results() {
             return (
               <article key={job.id} className="row-job-card">
                 
+                {/* Bloque Izquierdo */}
                 <div className="job-card-main-content">
                   <h3 style={{ color: 'white', fontSize: '1.35rem', margin: '0', fontWeight: '700' }}>
                     {job.title}
@@ -402,17 +389,12 @@ export function Results() {
                     <span className="company-blue-link">{job.company}</span>
                     <span style={{ color: 'rgba(255,255,255,0.15)' }}>•</span>
                     <span>{job.location}</span>
-                    {(job.type || job.contract) && (
-                      <>
-                        <span style={{ color: 'rgba(255,255,255,0.15)' }}>•</span>
-                        <span style={{ color: '#38edf8' }}>{job.type || job.contract}</span>
-                      </>
-                    )}
                   </div>
 
                   <p className="job-card-desc">{job.description}</p>
                 </div>
 
+                {/* Bloque Derecho */}
                 <div className="job-card-actions-side">
                   
                   <Link to={`/empleo/${job.id}`} className="btn-custom-blue" style={{
@@ -432,7 +414,7 @@ export function Results() {
                     Ver Detalles
                   </Link>
 
-                  {(!user || String(user.role).toLowerCase().trim() === 'trabajador') && (
+                  {(!user || String(user?.role).toLowerCase().trim() === 'trabajador') && (
                     <button 
                       onClick={() => toggleSaveJob(job)} 
                       style={{ 
@@ -459,7 +441,7 @@ export function Results() {
                   {isEmpresaOwner && (
                     <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
                       <button 
-                        onClick={() => window.location.href = `/empresas?edit=${job.id}`}
+                        onClick={() => navigate(`/empresas?edit=${job.id}`)}
                         style={{ 
                           flex: 1,
                           background: 'rgba(89, 100, 224, 0.1)', 
