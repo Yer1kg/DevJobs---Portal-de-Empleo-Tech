@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Empresas from '../components/Empresas';
+import { API_URL } from '../api';
 
 export function CompanyJobs() {
   const { user, token } = useAuth();
@@ -13,12 +14,12 @@ export function CompanyJobs() {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        let res = await fetch('http://localhost:3000/api/my-jobs', {
+        let res = await fetch(`${API_URL}/api/my-jobs`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
         if (!res.ok) {
-          res = await fetch('http://localhost:3000/api/jobs');
+          res = await fetch(`${API_URL}/api/jobs`);
         }
 
         if (res.ok) {
@@ -55,7 +56,7 @@ export function CompanyJobs() {
     if (!window.confirm('¿Seguro que quieres eliminar esta oferta?')) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/api/jobs/${jobId}`, {
+      const res = await fetch(`${API_URL}/api/jobs/${jobId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
