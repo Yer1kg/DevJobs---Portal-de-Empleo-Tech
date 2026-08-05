@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; 
-import { API_URL } from '../api'; // ✅ Importamos la URL dinámica
 
 export default function Empresas() {
   const [jobTitle, setJobTitle] = useState('');
@@ -40,8 +39,7 @@ export default function Empresas() {
 
   const fetchJobDetails = async (id) => {
     try {
-      // ✅ Reemplazado localhost por API_URL
-      const response = await fetch(`${API_URL}/api/jobs`);
+      const response = await fetch(`http://localhost:3000/api/jobs`);
       const jobs = await response.json();
       
       const job = jobs.find(j => j.id === parseInt(id));
@@ -49,7 +47,10 @@ export default function Empresas() {
         setJobTitle(job.title || '');
         setDescription(job.description || '');
         if (job.location) setLocation(job.location);
-        if (job.type) setContractType(job.type);
+        
+        // 🛠️ Soporte para múltiples nombres de propiedad al editar
+        const typeValue = job.type || job.contract || job.jobType || job.jornada;
+        if (typeValue) setContractType(typeValue);
       }
     } catch (error) {
       console.error("Error cargando empleo:", error);
@@ -85,10 +86,9 @@ export default function Empresas() {
     sendLock.current = true;
     setIsSubmitting(true);
 
-    // ✅ Reemplazado localhost por API_URL en ambas URLs
     const endpoint = isEditing 
-      ? `${API_URL}/api/jobs/update/${jobId}` 
-      : `${API_URL}/api/jobs/create`;
+      ? `http://localhost:3000/api/jobs/update/${jobId}` 
+      : 'http://localhost:3000/api/jobs/create';
 
     try {
       const response = await fetch(endpoint, {
@@ -101,8 +101,9 @@ export default function Empresas() {
           title: jobTitle,
           description: description,
           company: user?.username || "Empresa Registrada", 
-          location: location, // 📍 Envía la modalidad seleccionada
-          type: contractType, // 💼 Envía el tipo de jornada
+          location: location,
+          type: contractType, // 💼 Se envía como 'type'
+          contract: contractType, // 💼 Redundancia útil para asegurar compatibilidad con la API
           salary: "A convenir"
         })
       });
@@ -138,8 +139,7 @@ export default function Empresas() {
     setDescription(''); 
 
     try {
-      // ✅ Reemplazado localhost por API_URL
-      const response = await fetch(`${API_URL}/api/ai/generate-description`, {
+      const response = await fetch('http://localhost:3000/api/ai/generate-description', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -167,7 +167,6 @@ export default function Empresas() {
         setDescription((prev) => prev + chunk);
       }
     } catch (error) {
-      console.error("Error de la IA:", error);
       setDescription("❌ Hubo un error al generar la descripción.");
     } finally {
       setLoading(false);
@@ -196,7 +195,7 @@ export default function Empresas() {
         />
       </div>
 
-      {/* 🎛️ NUEVA SECCIÓN DE MODALIDAD Y TIPO DE JORNADA */}
+      {/* 🎛️ SECCIÓN DE MODALIDAD Y TIPO DE JORNADA */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
         <div className="ai-input-group" style={{ marginBottom: 0 }}>
           <label>Modalidad de Trabajo</label>
@@ -222,7 +221,7 @@ export default function Empresas() {
           >
             <option value="Jornada Completa">Jornada Completa</option>
             <option value="Jornada Parcial">Jornada Parcial</option>
-            <option value="Freelance">Freelance / CTT</option>
+            <option value="Freelance">Freelance</option>
             <option value="Indefinido">Indefinido</option>
           </select>
         </div>
