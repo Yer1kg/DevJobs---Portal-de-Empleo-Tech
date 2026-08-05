@@ -4,6 +4,9 @@ import { SearchBar } from '../components/SearchBar';
 import { useAuth } from '../context/AuthContext';
 import { useJobs } from '../context/JobsContext';
 
+// Define la URL base dinámica de la API
+const API_URL = import.meta.env.VITE_API_URL || 'https://devjobs-api-iu23.onrender.com';
+
 export function Results() {
   const { user, token } = useAuth();
   const { toggleSaveJob, isJobSaved } = useJobs();
@@ -25,7 +28,7 @@ export function Results() {
   const eliminarEmpleo = async (id) => {
     if (window.confirm(`¿Seguro que quieres eliminar la vacante con ID: ${id}?`)) {
       try {
-        const response = await fetch(`http://localhost:3000/api/jobs/delete/${id}`, {
+        const response = await fetch(`${API_URL}/api/jobs/delete/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -47,7 +50,7 @@ export function Results() {
 
   useEffect(() => {
     setCargandoDatos(true);
-    fetch(`http://localhost:3000/api/jobs${search}`)
+    fetch(`${API_URL}/api/jobs${search}`)
       .then(res => res.json())
       .then(data => {
         const jobsArray = data && data.data && Array.isArray(data.data) 
@@ -302,7 +305,7 @@ export function Results() {
             value={locationFilter} 
             onChange={(e) => handleFilterChange(setLocationFilter, e.target.value)}
           >
-          <option value="">Ubicación / Modalidad (Todas) ▾</option>
+            <option value="">Ubicación / Modalidad (Todas) ▾</option>
             <option value="remoto">100% Remoto</option>
             <option value="híbrido">Híbrido</option>
             <option value="presencial">Presencial</option>
