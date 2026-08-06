@@ -75,12 +75,21 @@ export function Results() {
     return () => controller.abort();
   }, [search]);
 
-  // FILTRADO OPTIMIZADO CON useMemo
+// FILTRADO OPTIMIZADO CON useMemo
   const filteredJobs = useMemo(() => {
     return allJobs.filter((job) => {
       const titleAndDesc = `${job.title || ''} ${job.description || ''}`.toLowerCase();
       const locationText = (job.location || '').toLowerCase();
-      const typeText = (job.type || job.contract || '').toLowerCase();
+      
+      // Captura el tipo de contrato sin importar la clave devuelta por el servidor
+      const typeText = (
+        job.type || 
+        job.contract || 
+        job.contract_type || 
+        job.jornada || 
+        job.tipo_jornada || 
+        ''
+      ).toLowerCase();
 
       const matchesTech = !techFilter || titleAndDesc.includes(techFilter.toLowerCase());
       const matchesLocation = !locationFilter || locationText.includes(locationFilter.toLowerCase());
