@@ -406,7 +406,7 @@ export function Results() {
                     <span>{job.location}</span>
                     <span style={{ color: 'rgba(255,255,255,0.15)' }}>•</span>
                     <span style={{ color: '#5964E0', fontWeight: '600' }}>
-                      {job.type || job.contract || job.contractType || job.contract_type || job.jobType || job.jornada || job.tipo_jornada || job.tipo_contrato || '⚠️ Sin contrato'}
+                      {job.type || job.contract || job.contractType || job.contract_type || job.jornada || job.tipo_jornada || '⚠️ Sin contrato'}
                     </span>
                   </div>
                   
