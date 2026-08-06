@@ -41,14 +41,18 @@ export const createJob = (req: Request, res: Response) => {
     return res.status(400).json({ errors: result.error.issues });
   }
 
-  const { title, company, location, salary, description } = result.data;
+  // Extraemos también el tipo de contrato del body/schema
+  const { title, company, location, salary, description, type, contract } = result.data;
+  
+  // Asignamos una variable que tome 'type' o 'contract'
+  const contractType = type || contract || 'Jornada Completa';
 
   const query = `
-    INSERT INTO jobs (title, company, location, salary, description)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO jobs (title, company, location, salary, description, type)
+    VALUES (?, ?, ?, ?, ?, ?)
   `;
 
-  db.run(query, [title, company, location, salary, description], function(err: any) {
+  db.run(query, [title, company, location, salary, description, contractType], function(err: any) {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -68,15 +72,16 @@ export const updateJob = (req: Request, res: Response) => {
 
   if (!result.success) return res.status(400).json({ errors: result.error.issues });
 
-  const { title, company, location, salary, description } = result.data;
-  
+  const { title, company, location, salary, description, type, contract } = result.data;
+  const contractType = type || contract || 'Jornada Completa';
+
   const query = `
     UPDATE jobs 
-    SET title = ?, company = ?, location = ?, salary = ?, description = ?
+    SET title = ?, company = ?, location = ?, salary = ?, description = ?, type = ?
     WHERE id = ?
   `;
 
-  db.run(query, [title, company, location, salary, description, id], function(err: any) {
+  db.run(query, [title, company, location, salary, description, contractType, id], function(err: any) {
     if (err) return res.status(500).json({ error: err.message });
     
     if (this.changes === 0) {
