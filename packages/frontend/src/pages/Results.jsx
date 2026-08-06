@@ -401,8 +401,12 @@ export function Results() {
                     <span className="company-blue-link">{job.company}</span>
                     <span style={{ color: 'rgba(255,255,255,0.15)' }}>•</span>
                     <span>{job.location}</span>
+                    <span style={{ color: 'rgba(255,255,255,0.15)' }}>•</span>
+                    <span style={{ color: '#5964E0', fontWeight: '600' }}>
+                      {job.type || job.contract || job.contract_type || job.jornada || '⚠️ Sin contrato'}
+                    </span>
                   </div>
-
+                  
                   <p className="job-card-desc">{job.description}</p>
                 </div>
 
