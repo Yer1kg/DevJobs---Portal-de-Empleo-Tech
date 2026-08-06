@@ -67,7 +67,7 @@ export default function Empresas() {
     scrollToBottom();
   }, [description]);
 
-  const handlePublish = async (e) => {
+const handlePublish = async (e) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -88,7 +88,6 @@ export default function Empresas() {
     sendLock.current = true;
     setIsSubmitting(true);
 
-    // 🛠️ Cambiado a API_URL
     const endpoint = isEditing 
       ? `${API_URL}/api/jobs/update/${jobId}` 
       : `${API_URL}/api/jobs/create`;
@@ -105,8 +104,14 @@ export default function Empresas() {
           description: description,
           company: user?.username || "Empresa Registrada", 
           location: location,
+          // 🛠️ Enviamos todas las variantes para asegurar compatibilidad con la BD y el filtro
           type: contractType,
           contract: contractType,
+          contract_type: contractType,
+          contractType: contractType,
+          jornada: contractType,
+          tipo_jornada: contractType,
+          tipo_contrato: contractType,
           salary: "A convenir"
         })
       });
