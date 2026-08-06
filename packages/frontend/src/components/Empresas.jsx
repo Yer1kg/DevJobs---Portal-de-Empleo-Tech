@@ -38,9 +38,8 @@ export default function Empresas() {
     }
   }, []);
 
-  const fetchJobDetails = async (id) => {
+ const fetchJobDetails = async (id) => {
     try {
-      // 🛠️ Cambiado a API_URL
       const response = await fetch(`${API_URL}/api/jobs`);
       const data = await response.json();
       const jobs = data && data.data && Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
@@ -51,7 +50,8 @@ export default function Empresas() {
         setDescription(job.description || '');
         if (job.location) setLocation(job.location);
         
-        const typeValue = job.type || job.contract || job.jobType || job.jornada;
+        // 🛠️ Añadimos contractType (camelCase) y contract_type (snake_case)
+        const typeValue = job.type || job.contract || job.contractType || job.contract_type || job.jobType || job.jornada;
         if (typeValue) setContractType(typeValue);
       }
     } catch (error) {
