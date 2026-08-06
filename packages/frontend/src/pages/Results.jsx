@@ -75,19 +75,22 @@ export function Results() {
     return () => controller.abort();
   }, [search]);
 
-// FILTRADO OPTIMIZADO CON useMemo
+  // FILTRADO OPTIMIZADO CON useMemo
   const filteredJobs = useMemo(() => {
     return allJobs.filter((job) => {
       const titleAndDesc = `${job.title || ''} ${job.description || ''}`.toLowerCase();
       const locationText = (job.location || '').toLowerCase();
       
-      // Captura el tipo de contrato sin importar la clave devuelta por el servidor
+      // Captura el tipo de contrato contemplando todas las variantes posibles del backend
       const typeText = (
         job.type || 
         job.contract || 
+        job.contractType ||
         job.contract_type || 
+        job.jobType ||
         job.jornada || 
         job.tipo_jornada || 
+        job.tipo_contrato ||
         ''
       ).toLowerCase();
 
@@ -403,7 +406,7 @@ export function Results() {
                     <span>{job.location}</span>
                     <span style={{ color: 'rgba(255,255,255,0.15)' }}>•</span>
                     <span style={{ color: '#5964E0', fontWeight: '600' }}>
-                      {job.type || job.contract || job.contract_type || job.jornada || '⚠️ Sin contrato'}
+                      {job.type || job.contract || job.contractType || job.contract_type || job.jobType || job.jornada || job.tipo_jornada || job.tipo_contrato || '⚠️ Sin contrato'}
                     </span>
                   </div>
                   
