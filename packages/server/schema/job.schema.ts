@@ -5,6 +5,9 @@ export const jobSchema = z.object({
   description: z.string().min(20, "La descripción debe ser más detallada"),
   company: z.string().default("Empresa Anónima"),
   location: z.string().default("Remoto"),
-  salary: z.string().optional()
+  salary: z.string().optional(),
+  // Campos añadidos para permitir el tipo de contrato:
+  type: z.string().optional(),
+  contract: z.string().optional(),
+  contractType: z.string().optional()
 });
-
