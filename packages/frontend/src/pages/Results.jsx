@@ -330,10 +330,10 @@ export function Results() {
             onChange={(e) => handleFilterChange(setContractFilter, e.target.value)}
           >
             <option value="">Tipo de contrato ▾</option>
-            <option value="completa">Jornada Completa</option>
-            <option value="parcial">Jornada Parcial</option>
-            <option value="indefinido">Indefinido</option>
-            <option value="freelance">Freelance</option>
+            <option value="Jornada Completa">Jornada Completa</option>
+            <option value=">Jornada Parcial">Jornada Parcial</option>
+            <option value="Indefinido">Indefinido</option>
+            <option value="Freelance">Freelance</option>
           </select>
 
           <select 
