@@ -331,7 +331,7 @@ export function Results() {
           >
             <option value="">Tipo de contrato ▾</option>
             <option value="Jornada Completa">Jornada Completa</option>
-            <option value=">Jornada Parcial">Jornada Parcial</option>
+            <option value="Jornada Parcial">Jornada Parcial</option>
             <option value="Indefinido">Indefinido</option>
             <option value="Freelance">Freelance</option>
           </select>
