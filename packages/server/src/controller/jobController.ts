@@ -75,33 +75,37 @@ export const getJobs = (req: Request, res: Response, next: NextFunction) => {
 /**
  * Crea un nuevo empleo en la base de datos SQLite.
  */
-export const createJob = (req: Request, res: Response) => {
+export const createJob = (req: any, res: Response) => {
   const result = jobSchema.safeParse(req.body);
 
   if (!result.success) {
     return res.status(400).json({ errors: result.error.issues });
   }
 
-  // Extraemos también el tipo de contrato del body/schema
-  const { title, company, location, salary, description, type, contract } = result.data;
-  
-  // Asignamos una variable que tome 'type' o 'contract'
+  const { title, company, location, salary, description, type, contract, category } = result.data;
+
   const contractType = type || contract || 'Jornada Completa';
+  const jobCategory = category || 'otros';
+  const userId = req.user?.id || null; // si tienes middleware auth que rellena req.user
 
   const query = `
-    INSERT INTO jobs (title, company, location, salary, description, type)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO jobs (title, company, location, salary, description, type, category, user_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  db.run(query, [title, company, location, salary, description, contractType], function(err: any) {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+  db.run(
+    query,
+    [title, company, location, salary, description, contractType, jobCategory, userId],
+    function (err: any) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.status(201).json({
+        message: "Publicado",
+        jobId: this.lastID
+      });
     }
-    res.status(201).json({ 
-      message: "Publicado", 
-      jobId: this.lastID 
-    });
-  });
+  );
 };
 
 /**
