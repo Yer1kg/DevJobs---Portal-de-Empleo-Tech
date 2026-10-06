@@ -30,7 +30,16 @@ const jobSchema = z.object({
     }),
   company: z.string().min(2, "El nombre de la empresa es obligatorio"),
   location: z.string().min(3, "La ubicación debe tener al menos 3 caracteres"),
-  salary: z.string().default("A convenir")
+  salary: z.string().default("A convenir"),
+  // ✅ AÑADIDOS:
+  type: z.string().optional(),
+  contract: z.string().optional(),
+  contractType: z.string().optional(),
+  contract_type: z.string().optional(),
+  category: z.string().optional(),
+  jornada: z.string().optional(),
+  tipo_jornada: z.string().optional(),
+  tipo_contrato: z.string().optional(),
 });
 
 // --- RUTAS DE AUTENTICACIÓN (AUTH) ---
