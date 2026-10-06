@@ -270,37 +270,41 @@ app.post('/api/jobs/create', authenticateToken, (req: any, res) => {
 
   const result = jobSchema.safeParse(req.body);
   if (!result.success) {
-    return res.status(400).json({ error: "Datos inválidos", details: result.error.errors.map(e => ({ message: e.message })) });
+    return res.status(400).json({
+      error: "Datos inválidos",
+      details: result.error.errors.map(e => ({ message: e.message }))
+    });
   }
-
-  const userId = req.user.id; 
-  const { title, description, company, location, salary } = result.data;
-
-  const query = `INSERT INTO jobs (title, description, company, location, salary, user_id) VALUES (?, ?, ?, ?, ?, ?)`;
-  db.run(query, [title, description, company, location, salary, userId], function(err: any) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: "Vacante creada correctamente", id: this.lastID });
-  });
-});
-
-app.post('/api/jobs/update/:id', authenticateToken, (req: any, res) => {
-  if (req.user.role !== 'empresa') {
-    return res.status(403).json({ error: "No tienes permisos de empresa para editar." });
-  }
-
-  const { id } = req.params;
-  const result = jobSchema.safeParse(req.body);
-  if (!result.success) return res.status(400).json({ error: "Datos inválidos", details: result.error.errors });
 
   const userId = req.user.id;
   const { title, description, company, location, salary } = result.data;
 
-  const query = `UPDATE jobs SET title = ?, description = ?, company = ?, location = ?, salary = ? WHERE id = ? AND user_id = ?`;
-  db.run(query, [title, description, company, location, salary, id, userId], function(err: any) {
-    if (err) return res.status(500).json({ error: err.message });
-    if (this.changes === 0) return res.status(403).json({ message: "No eres el dueño de esta oferta o no existe." });
-    res.json({ message: "Cambios guardados correctamente" });
-  });
+  // 🛠️ Extraemos el tipo de contrato aceptando todas las variantes que envía el frontend
+  const contratoFinal =
+    result.data.type ||
+    result.data.contract ||
+    result.data.contractType ||
+    result.data.contract_type ||
+    result.data.jornada ||
+    result.data.tipo_jornada ||
+    result.data.tipo_contrato ||
+    'Jornada Completa';
+
+  const categoriaFinal = result.data.category || 'otros';
+
+  const query = `
+    INSERT INTO jobs (title, description, company, location, salary, type, category, user_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  db.run(
+    query,
+    [title, description, company, location, salary, contratoFinal, categoriaFinal, userId],
+    function (err: any) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ message: "Vacante creada correctamente", id: this.lastID });
+    }
+  );
 });
 
 app.get('/api/jobs/delete/:id', authenticateToken, (req: any, res) => {
