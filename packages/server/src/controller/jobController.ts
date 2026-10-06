@@ -9,23 +9,64 @@ import { jobSchema } from '../validation/index.js'; // Esto eliminará el error 
  */
 export const getJobs = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { search } = req.query;
+    const page = req.query.page ? parseInt(req.query.page as string) : null;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
 
-    if (search && typeof search === 'string') {
-      const searchTerm = `%${search}%`;
-      const query = 'SELECT * FROM jobs WHERE title LIKE ? OR company LIKE ?';
-      
-      db.all(query, [searchTerm, searchTerm], (err: any, rows: any) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-      });
-    } else {
-      // Si no hay búsqueda, devolvemos todo
-      db.all('SELECT * FROM jobs', [], (err: any, rows: any) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-      });
+    const title = req.query.title ? `%${req.query.title}%` : '%';
+    const location = req.query.location ? `%${req.query.location}%` : '%';
+    const category = req.query.category as string | undefined;
+
+    // WHERE dinámico
+    const conditions = [
+      `(jobs.title LIKE ? OR jobs.company LIKE ?)`,
+      `jobs.location LIKE ?`
+    ];
+    const params: any[] = [title, title, location];
+
+    if (category && category !== 'todas' && category !== 'all') {
+      conditions.push(`jobs.category = ?`);
+      params.push(category);
     }
+
+    const whereClause = `WHERE ${conditions.join(' AND ')}`;
+
+    if (!page) {
+      return db.all(
+        `SELECT * FROM jobs ${whereClause} ORDER BY created_at DESC`,
+        params,
+        (err, rows) => {
+          if (err) return res.status(500).json({ error: err.message });
+          res.json(rows);
+        }
+      );
+    }
+
+    const offset = (page - 1) * limit;
+
+    // 1) Contar total real
+    db.get(
+      `SELECT COUNT(*) as total FROM jobs ${whereClause}`,
+      params,
+      (err, countRow: any) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        // 2) Traer la página
+        db.all(
+          `SELECT * FROM jobs ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+          [...params, limit, offset],
+          (err, rows) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({
+              page,
+              limit,
+              total: countRow.total,
+              totalPages: Math.ceil(countRow.total / limit),
+              data: rows
+            });
+          }
+        );
+      }
+    );
   } catch (error) {
     next(error);
   }
