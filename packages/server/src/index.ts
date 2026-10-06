@@ -17,29 +17,23 @@ app.use(express.json());
 app.use(cors());
 
 const jobSchema = z.object({
-  title: z.string()
-    .min(10, "El título es demasiado genérico")
-    .max(100, "El título no puede superar los 100 caracteres"),
-  description: z.string()
-    .min(30, "La descripción es demasiado corta")
+  title: z.string().min(10, "El título es demasiado genérico").max(100),
+  description: z.string().min(30, "La descripción es demasiado corta")
     .refine((val) => !val.includes("Lo siento") && !val.includes("no parece ser"), {
-      message: "La descripción contiene un mensaje de error de la IA y no puede ser publicada."
-    })
-    .refine((val) => !val.includes("¡Claro!") && !val.includes("¿Quieres jugar?"), {
-      message: "El contenido no es profesional."
+      message: "La descripción contiene un mensaje de error de la IA."
     }),
   company: z.string().min(2, "El nombre de la empresa es obligatorio"),
   location: z.string().min(3, "La ubicación debe tener al menos 3 caracteres"),
   salary: z.string().default("A convenir"),
-  // ✅ AÑADIDOS:
+  // ✅ ESTAS SON LAS QUE FALTABAN:
   type: z.string().optional(),
   contract: z.string().optional(),
   contractType: z.string().optional(),
   contract_type: z.string().optional(),
-  category: z.string().optional(),
   jornada: z.string().optional(),
   tipo_jornada: z.string().optional(),
   tipo_contrato: z.string().optional(),
+  category: z.string().optional(),
 });
 
 // --- RUTAS DE AUTENTICACIÓN (AUTH) ---
