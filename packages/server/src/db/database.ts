@@ -35,12 +35,9 @@ db.serialize(() => {
 
       // 🛠️ MIGRACIÓN: Añadir columna 'last_role_change' si no existe
       db.run(`ALTER TABLE users ADD COLUMN last_role_change TEXT`, (err) => {
-        if (err) {
-          console.log("ℹ️ La columna 'last_role_change' ya existe o no se pudo añadir.");
-        } else {
-          console.log("🚀 ¡Columna 'last_role_change' añadida con éxito a la tabla users!");
-        }
-      });
+      if (err) console.log("ℹ️ La columna 'type' ya existe en jobs.");
+      else console.log("🚀 Columna 'type' añadida a jobs.");
+          });
     }
   });
 
