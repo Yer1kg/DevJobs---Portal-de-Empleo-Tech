@@ -279,7 +279,7 @@ app.post('/api/jobs/create', authenticateToken, (req: any, res) => {
   const userId = req.user.id;
   const { title, description, company, location, salary } = result.data;
 
-  // 🛠️ Extraemos el tipo de contrato aceptando todas las variantes que envía el frontend
+  // 🛠️ Aquí está la magia: cogemos el tipo de contrato venga como venga
   const contratoFinal =
     result.data.type ||
     result.data.contract ||
