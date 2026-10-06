@@ -257,60 +257,42 @@ app.get('/api/jobs/:id', (req, res) => {
   });
 });
 
-app.post('/api/jobs/create', authenticateToken, (req: any, res) => {
+app.post('/api/jobs/update/:id', authenticateToken, (req: any, res) => {
   if (req.user.role !== 'empresa') {
-    return res.status(403).json({ error: "Acceso denegado: Solo las cuentas de Empresa pueden publicar ofertas." });
+    return res.status(403).json({ error: "No tienes permisos de empresa para editar." });
   }
 
+  const { id } = req.params;
   const result = jobSchema.safeParse(req.body);
-  if (!result.success) {
-    return res.status(400).json({
-      error: "Datos inválidos",
-      details: result.error.errors.map(e => ({ message: e.message }))
-    });
-  }
+  if (!result.success) return res.status(400).json({ error: "Datos inválidos", details: result.error.errors });
 
   const userId = req.user.id;
   const { title, description, company, location, salary } = result.data;
 
-  // 🛠️ Aquí está la magia: cogemos el tipo de contrato venga como venga
   const contratoFinal =
     result.data.type ||
     result.data.contract ||
     result.data.contractType ||
     result.data.contract_type ||
-    result.data.jornada ||
-    result.data.tipo_jornada ||
-    result.data.tipo_contrato ||
     'Jornada Completa';
 
   const categoriaFinal = result.data.category || 'otros';
 
   const query = `
-    INSERT INTO jobs (title, description, company, location, salary, type, category, user_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    UPDATE jobs
+    SET title = ?, description = ?, company = ?, location = ?, salary = ?, type = ?, category = ?
+    WHERE id = ? AND user_id = ?
   `;
 
   db.run(
     query,
-    [title, description, company, location, salary, contratoFinal, categoriaFinal, userId],
+    [title, description, company, location, salary, contratoFinal, categoriaFinal, id, userId],
     function (err: any) {
       if (err) return res.status(500).json({ error: err.message });
-      res.json({ message: "Vacante creada correctamente", id: this.lastID });
+      if (this.changes === 0) return res.status(403).json({ message: "No eres el dueño de esta oferta o no existe." });
+      res.json({ message: "Cambios guardados correctamente" });
     }
   );
-});
-
-app.get('/api/jobs/delete/:id', authenticateToken, (req: any, res) => {
-  const { id } = req.params;
-  const userId = req.user.id;
-
-  const query = 'DELETE FROM jobs WHERE id = ? AND user_id = ?';
-  db.run(query, [id, userId], function(err: any) {
-    if (err) return res.status(500).json({ error: err.message });
-    if (this.changes === 0) return res.status(403).json({ message: "No tienes permisos para eliminar esta vacante." });
-    res.json({ message: "Vacante registrada eliminada correctamente" });
-  });
 });
 
 // --- RUTAS DE USUARIOS / CUENTA CON TRANSACCIONES Y BORRADO AUTOMÁTICO DE OFERTAS ---
