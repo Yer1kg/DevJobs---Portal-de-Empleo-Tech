@@ -66,6 +66,23 @@ db.serialize(() => {
           console.log("✅ Estructura actualizada: Columna 'user_id' añadida con éxito.");
         }
       });
+            // 🛠️ MIGRACIÓN: Añadir columna 'type' (tipo de contrato) si no existe
+      db.run(`ALTER TABLE jobs ADD COLUMN type TEXT DEFAULT 'Jornada Completa';`, (err) => {
+        if (err) {
+          console.log("ℹ️ La columna 'type' ya existe en la tabla jobs.");
+        } else {
+          console.log("✅ Columna 'type' añadida a jobs.");
+        }
+      });
+
+      // 🛠️ MIGRACIÓN: Añadir columna 'category' si no existe
+      db.run(`ALTER TABLE jobs ADD COLUMN category TEXT DEFAULT 'otros';`, (err) => {
+        if (err) {
+          console.log("ℹ️ La columna 'category' ya existe en la tabla jobs.");
+        } else {
+          console.log("✅ Columna 'category' añadida a jobs.");
+        }
+      });
     }
   });
 });
