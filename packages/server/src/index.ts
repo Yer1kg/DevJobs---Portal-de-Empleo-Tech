@@ -6,7 +6,7 @@ import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { aiRouter } from './routes/ai.routes.js';
 import db from './db/database.js';
-import { authenticateToken } from './middleware/auth.middleware.js'; 
+import { authenticateToken } from './middleware/auth.middleware.js';
 
 dotenv.config();
 
@@ -16,6 +16,12 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// ============================================================
+// SCHEMA DE VALIDACIÓN DE OFERTAS (Zod)
+// Acepta type, contract, contractType, contract_type, jornada,
+// tipo_jornada, tipo_contrato y category — vengan como vengan
+// desde el frontend.
+// ============================================================
 const jobSchema = z.object({
   title: z.string()
     .min(10, "El título es demasiado genérico")
@@ -30,10 +36,36 @@ const jobSchema = z.object({
     }),
   company: z.string().min(2, "El nombre de la empresa es obligatorio"),
   location: z.string().min(3, "La ubicación debe tener al menos 3 caracteres"),
-  salary: z.string().default("A convenir")
+  salary: z.string().default("A convenir"),
+  // ✅ Variantes de tipo de contrato (el frontend envía varias)
+  type: z.string().optional(),
+  contract: z.string().optional(),
+  contractType: z.string().optional(),
+  contract_type: z.string().optional(),
+  jornada: z.string().optional(),
+  tipo_jornada: z.string().optional(),
+  tipo_contrato: z.string().optional(),
+  // ✅ Categoría
+  category: z.string().optional(),
 });
 
-// --- RUTAS DE AUTENTICACIÓN (AUTH) ---
+// Helper: saca el tipo de contrato de cualquiera de las variantes
+function extraerContrato(data: any): string {
+  return (
+    data.type ||
+    data.contract ||
+    data.contractType ||
+    data.contract_type ||
+    data.jornada ||
+    data.tipo_jornada ||
+    data.tipo_contrato ||
+    'Jornada Completa'
+  );
+}
+
+// ============================================================
+// RUTAS DE AUTENTICACIÓN
+// ============================================================
 
 app.post('/api/auth/register', async (req, res) => {
   const { username, email, password, role } = req.body;
@@ -47,18 +79,18 @@ app.post('/api/auth/register', async (req, res) => {
     const rolFinal = (role === 'empresa' || role === 'trabajador') ? role : 'trabajador';
 
     const query = `INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`;
-    
-    db.run(query, [username, email, hashedPassword, rolFinal], function(err) {
+
+    db.run(query, [username, email, hashedPassword, rolFinal], function (err) {
       if (err) {
         if (err.message.includes("UNIQUE constraint failed")) {
           return res.status(400).json({ error: "El nombre de usuario o el email ya están registrados." });
         }
         return res.status(500).json({ error: err.message });
       }
-      
-      res.status(201).json({ 
-        message: "Usuario registrado con éxito", 
-        userId: this.lastID 
+
+      res.status(201).json({
+        message: "Usuario registrado con éxito",
+        userId: this.lastID
       });
     });
 
@@ -76,7 +108,7 @@ app.post('/api/auth/login', async (req, res) => {
 
   try {
     const query = `SELECT * FROM users WHERE email = ?`;
-    
+
     db.get(query, [email], async (err, user: any) => {
       if (err) return res.status(500).json({ error: err.message });
       if (!user) return res.status(401).json({ error: "El email o la contraseña no son correctos." });
@@ -142,7 +174,7 @@ app.put('/api/profile/update', authenticateToken, (req: any, res: any) => {
 
   const query = `UPDATE users SET username = ?, email = ? WHERE id = ?`;
 
-  db.run(query, [username, email, userId], function(err) {
+  db.run(query, [username, email, userId], function (err) {
     if (err) {
       if (err.message.includes("UNIQUE constraint failed")) {
         return res.status(400).json({ error: "El nombre de usuario o el email ya están siendo usados por otra cuenta." });
@@ -152,7 +184,7 @@ app.put('/api/profile/update', authenticateToken, (req: any, res: any) => {
 
     db.get('SELECT id, username, email, role FROM users WHERE id = ?', [userId], (err, updatedUser: any) => {
       if (err) return res.status(500).json({ error: err.message });
-      
+
       const secretKey = process.env.JWT_SECRET || 'tu_clave_secreta_de_desarrollo';
       const nuevoToken = jwt.sign(
         { id: updatedUser.id, username: updatedUser.username, email: updatedUser.email, role: updatedUser.role },
@@ -169,12 +201,14 @@ app.put('/api/profile/update', authenticateToken, (req: any, res: any) => {
   });
 });
 
-// --- RUTAS DE TRABAJOS (JOBS) ---
+// ============================================================
+// RUTAS DE TRABAJOS (JOBS)
+// ============================================================
 
 app.get('/api/jobs', (req, res) => {
   const page = req.query.page ? parseInt(req.query.page as string) : null;
   const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
-  
+
   const search = req.query.title ? `%${req.query.title}%` : '%';
   const searchLocation = req.query.location ? `%${req.query.location}%` : '%';
 
@@ -182,6 +216,7 @@ app.get('/api/jobs', (req, res) => {
     const query = `
       SELECT 
         jobs.id, jobs.title, jobs.location, jobs.salary, jobs.description, jobs.created_at, jobs.user_id,
+        jobs.type, jobs.category,
         COALESCE(users.username, jobs.company) AS company,
         users.username AS author_name 
       FROM jobs 
@@ -200,6 +235,7 @@ app.get('/api/jobs', (req, res) => {
   const query = `
     SELECT 
       jobs.id, jobs.title, jobs.location, jobs.salary, jobs.description, jobs.created_at, jobs.user_id,
+      jobs.type, jobs.category,
       COALESCE(users.username, jobs.company) AS company,
       users.username AS author_name
     FROM jobs 
@@ -219,6 +255,7 @@ app.get('/api/jobs/featured', (req, res) => {
   const query = `
     SELECT 
       jobs.id, jobs.title, jobs.location, jobs.salary, jobs.description, jobs.created_at, jobs.user_id,
+      jobs.type, jobs.category,
       COALESCE(users.username, jobs.company) AS company,
       users.username AS author_name 
     FROM jobs 
@@ -238,6 +275,7 @@ app.get('/api/jobs/:id', (req, res) => {
   const query = `
     SELECT 
       jobs.id, jobs.title, jobs.location, jobs.salary, jobs.description, jobs.created_at, jobs.user_id,
+      jobs.type, jobs.category,
       COALESCE(users.username, jobs.company) AS company,
       users.username AS author_name 
     FROM jobs 
@@ -248,11 +286,14 @@ app.get('/api/jobs/:id', (req, res) => {
   db.get(query, [id], (err: any, row: any) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!row) return res.status(404).json({ error: "La oferta de empleo no existe." });
-    
+
     res.json(row);
   });
 });
 
+// ============================================================
+// CREAR OFERTA — con type, category y user_id
+// ============================================================
 app.post('/api/jobs/create', authenticateToken, (req: any, res) => {
   if (req.user.role !== 'empresa') {
     return res.status(403).json({ error: "Acceso denegado: Solo las cuentas de Empresa pueden publicar ofertas." });
@@ -260,19 +301,36 @@ app.post('/api/jobs/create', authenticateToken, (req: any, res) => {
 
   const result = jobSchema.safeParse(req.body);
   if (!result.success) {
-    return res.status(400).json({ error: "Datos inválidos", details: result.error.errors.map(e => ({ message: e.message })) });
+    return res.status(400).json({
+      error: "Datos inválidos",
+      details: result.error.errors.map(e => ({ message: e.message }))
+    });
   }
 
-  const userId = req.user.id; 
+  const userId = req.user.id;
   const { title, description, company, location, salary } = result.data;
 
-  const query = `INSERT INTO jobs (title, description, company, location, salary, user_id) VALUES (?, ?, ?, ?, ?, ?)`;
-  db.run(query, [title, description, company, location, salary, userId], function(err: any) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: "Vacante creada correctamente", id: this.lastID });
-  });
+  const contratoFinal = extraerContrato(result.data);
+  const categoriaFinal = result.data.category || 'otros';
+
+  const query = `
+    INSERT INTO jobs (title, description, company, location, salary, type, category, user_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  db.run(
+    query,
+    [title, description, company, location, salary, contratoFinal, categoriaFinal, userId],
+    function (err: any) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ message: "Vacante creada correctamente", id: this.lastID });
+    }
+  );
 });
 
+// ============================================================
+// ACTUALIZAR OFERTA — con type y category
+// ============================================================
 app.post('/api/jobs/update/:id', authenticateToken, (req: any, res) => {
   if (req.user.role !== 'empresa') {
     return res.status(403).json({ error: "No tienes permisos de empresa para editar." });
@@ -285,12 +343,24 @@ app.post('/api/jobs/update/:id', authenticateToken, (req: any, res) => {
   const userId = req.user.id;
   const { title, description, company, location, salary } = result.data;
 
-  const query = `UPDATE jobs SET title = ?, description = ?, company = ?, location = ?, salary = ? WHERE id = ? AND user_id = ?`;
-  db.run(query, [title, description, company, location, salary, id, userId], function(err: any) {
-    if (err) return res.status(500).json({ error: err.message });
-    if (this.changes === 0) return res.status(403).json({ message: "No eres el dueño de esta oferta o no existe." });
-    res.json({ message: "Cambios guardados correctamente" });
-  });
+  const contratoFinal = extraerContrato(result.data);
+  const categoriaFinal = result.data.category || 'otros';
+
+  const query = `
+    UPDATE jobs
+    SET title = ?, description = ?, company = ?, location = ?, salary = ?, type = ?, category = ?
+    WHERE id = ? AND user_id = ?
+  `;
+
+  db.run(
+    query,
+    [title, description, company, location, salary, contratoFinal, categoriaFinal, id, userId],
+    function (err: any) {
+      if (err) return res.status(500).json({ error: err.message });
+      if (this.changes === 0) return res.status(403).json({ message: "No eres el dueño de esta oferta o no existe." });
+      res.json({ message: "Cambios guardados correctamente" });
+    }
+  );
 });
 
 app.get('/api/jobs/delete/:id', authenticateToken, (req: any, res) => {
@@ -298,14 +368,16 @@ app.get('/api/jobs/delete/:id', authenticateToken, (req: any, res) => {
   const userId = req.user.id;
 
   const query = 'DELETE FROM jobs WHERE id = ? AND user_id = ?';
-  db.run(query, [id, userId], function(err: any) {
+  db.run(query, [id, userId], function (err: any) {
     if (err) return res.status(500).json({ error: err.message });
     if (this.changes === 0) return res.status(403).json({ message: "No tienes permisos para eliminar esta vacante." });
     res.json({ message: "Vacante registrada eliminada correctamente" });
   });
 });
 
-// --- RUTAS DE USUARIOS / CUENTA CON TRANSACCIONES Y BORRADO AUTOMÁTICO DE OFERTAS ---
+// ============================================================
+// USUARIOS / CUENTA
+// ============================================================
 
 app.post('/api/users/change-role', authenticateToken, (req: any, res: any) => {
   const userId = req.user.id;
@@ -353,10 +425,10 @@ app.post('/api/users/change-role', authenticateToken, (req: any, res: any) => {
                   { expiresIn: '24h' }
                 );
 
-                return res.json({ 
-                  message: `¡Rol cambiado con éxito! Ahora eres: ${miNuevoRol}. Tus ofertas han sido eliminadas automáticamente.`, 
-                  nuevoRol: miNuevoRol, 
-                  token: nuevoToken 
+                return res.json({
+                  message: `¡Rol cambiado con éxito! Ahora eres: ${miNuevoRol}. Tus ofertas han sido eliminadas automáticamente.`,
+                  nuevoRol: miNuevoRol,
+                  token: nuevoToken
                 });
               });
             }
@@ -385,10 +457,10 @@ app.post('/api/users/change-role', authenticateToken, (req: any, res: any) => {
                 { expiresIn: '24h' }
               );
 
-              return res.json({ 
-                message: `¡Rol cambiado con éxito! Ahora eres: ${miNuevoRol}`, 
-                nuevoRol: miNuevoRol, 
-                token: nuevoToken 
+              return res.json({
+                message: `¡Rol cambiado con éxito! Ahora eres: ${miNuevoRol}`,
+                nuevoRol: miNuevoRol,
+                token: nuevoToken
               });
             });
           }
@@ -399,7 +471,7 @@ app.post('/api/users/change-role', authenticateToken, (req: any, res: any) => {
 });
 
 app.get('/api/admin/clean-db', (req, res) => {
-  db.run("DELETE FROM jobs WHERE user_id IS NULL", function(err) {
+  db.run("DELETE FROM jobs WHERE user_id IS NULL", function (err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: `Limpieza exitosa. Se han eliminado ${this.changes} vacantes antiguas.` });
   });
@@ -426,8 +498,8 @@ app.get('/api/users/profile-public/:id', (req: any, res: any) => {
     if (err) return res.status(500).json({ error: "Error en la consulta SQL relacional." });
     if (!perfilEmpresa || !perfilEmpresa.id) return res.status(404).json({ error: "El usuario o empresa no existe." });
 
-    const ofertasArray = perfilEmpresa.lista_empleos 
-      ? perfilEmpresa.lista_empleos.split(' | ') 
+    const ofertasArray = perfilEmpresa.lista_empleos
+      ? perfilEmpresa.lista_empleos.split(' | ')
       : [];
 
     res.json({
@@ -444,7 +516,15 @@ app.get('/api/users/profile-public/:id', (req: any, res: any) => {
   });
 });
 
+// ============================================================
+// RUTAS DE IA
+// ============================================================
+
 app.use('/api/ai', aiRouter);
 
-const PORT = 3000;
+// ============================================================
+// ARRANQUE
+// ============================================================
+
+const PORT = parseInt(process.env.PORT || '3000', 10);
 app.listen(PORT, () => console.log(`🚀 SERVIDOR EN PUERTO ${PORT}`));
