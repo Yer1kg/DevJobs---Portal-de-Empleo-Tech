@@ -13,6 +13,7 @@ dotenv.config();
 db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_job_unique ON jobs (title, description)`);
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(express.json());
 app.use(cors());
 
