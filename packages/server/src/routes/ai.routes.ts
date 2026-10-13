@@ -13,9 +13,9 @@ const envPath = path.resolve(__dirname, '../../../../.env');
 dotenv.config({ path: envPath });
 
 const MODELS = {
-  LLAMA: "llama-3.3-70b-versatile",
-  MIXTRAL: "mixtral-8x7b-32768",
-  DEEPSEEK: "deepseek-r1-distill-llama-70b"
+  LLAMA: "openai/gpt-oss-120b",  
+  MIXTRAL: "mixtral-8x7b-32768", 
+  DEEPSEEK: "deepseek-r1-distill-llama-70b" 
 };
 
 const router = Router();
