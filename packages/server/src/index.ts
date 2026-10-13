@@ -377,15 +377,17 @@ app.delete('/api/jobs/:id', authenticateToken, (req: any, res) => {
   });
 });
 
-app.get('/api/jobs/delete/:id', authenticateToken, (req: any, res) => {
+app.delete('/api/jobs/delete/:id', authenticateToken, (req: any, res) => {
   const { id } = req.params;
   const userId = req.user.id;
 
   const query = 'DELETE FROM jobs WHERE id = ? AND user_id = ?';
   db.run(query, [id, userId], function (err: any) {
     if (err) return res.status(500).json({ error: err.message });
-    if (this.changes === 0) return res.status(403).json({ message: "No tienes permisos para eliminar esta vacante." });
-    res.json({ message: "Vacante registrada eliminada correctamente" });
+    if (this.changes === 0) {
+      return res.status(403).json({ message: "No tienes permisos para eliminar esta vacante o no existe." });
+    }
+    res.json({ message: "Vacante eliminada correctamente" });
   });
 });
 
