@@ -42,34 +42,3 @@ Api: https://devjobs-api-iu23.onrender.com
 * **SQLite** (Base de datos relacional)
 * **JWT (JsonWebToken)** & **Bcrypt** (Seguridad y encriptación)
 * **CORS** & **Dotenv**
-
----
-
-## 🚀 Instalación y Configuración Local
-
-Este proyecto utiliza **pnpm** como gestor de paquetes para garantizar descargas más rápidas, un uso eficiente del disco y mayor seguridad en el manejo de dependencias.
-
-### 1. Clonar el repositorio
-```bash
-git clone [https://github.com/TU_USUARIO/devjobs.git](https://github.com/TU_USUARIO/devjobs.git)
-cd devjobs
-2. Configurar el Backend
-Bash
-cd backend
-pnpm install
-Crea un archivo .env en la carpeta backend con las siguientes variables:
-
-Fragmento de código
-PORT=3000
-JWT_SECRET=tu_clave_secreta_super_segura
-Inicia el servidor de desarrollo:
-
-Bash
-pnpm dev
-3. Configurar el Frontend
-Abre otra terminal en la raíz del proyecto y ejecuta:
-
-Bash
-cd frontend
-pnpm install
-pnpm dev
