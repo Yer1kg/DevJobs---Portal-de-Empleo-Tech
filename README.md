@@ -1,6 +1,8 @@
 # 💻 Devjobs - Portal de Empleo Tech
 
-**Devjobs** es una plataforma web full-stack diseñada para conectar a desarrolladores con empresas del sector tecnológico. Permite la búsqueda de empleo, gestión de vacantes y perfiles profesionales dinámicos según el rol del usuario.
+DevJobs es una plataforma web full-stack de empleo tech que conecta desarrolladores con empresas. Construida como proyecto final del bootcamp JSCamp de midudev, disponible online como demo técnica
+
+Permite a empresas publicar, editar y borrar vacantes; a candidatos buscar ofertas con filtros dinámicos por título, ubicación, tipo de contrato y categoría, guardar favoritos y gestionar postulaciones. Incluye autenticación con JWT y roles, validación con Zod y generación de descripciones con IA en streaming.
 
 Web: https://devjobs-web-6uil.onrender.com
 Api: https://devjobs-api-iu23.onrender.com
